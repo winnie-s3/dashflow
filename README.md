@@ -1,36 +1,242 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# DashFlow
 
-## Getting Started
+Dashboard empresarial para visualização de métricas financeiras e operacionais a partir de planilhas CSV.
 
-First, run the development server:
+O projeto foi desenvolvido com foco em velocidade de construção, experiência visual moderna e automação de processos internos para pequenas empresas que ainda trabalham com Excel, WhatsApp e processos manuais.
+
+---
+
+# Objetivo
+
+O DashFlow transforma planilhas em dashboards interativos e relatórios automáticos, permitindo visualizar receitas, despesas, métricas operacionais e dados consolidados em poucos segundos.
+
+O foco principal é:
+
+- organização operacional;
+- redução de retrabalho;
+- visualização rápida de indicadores;
+- automação de relatórios;
+- centralização de dados.
+
+---
+
+# Screenshots
+
+## Dashboard Overview (Light Mode)
+
+![Dashboard Overview Light](./public/screenshots/dashboard-overview-light.png)
+
+---
+
+## Dashboard Analytics (Light Mode)
+
+![Dashboard Analytics Light](./public/screenshots/dashboard-analytics-light.png)
+
+---
+
+## Dashboard Transactions (Light Mode)
+
+![Dashboard Transactions Light](./public/screenshots/dashboard-transactions-light.png)
+
+---
+
+## Dashboard Overview (Dark Mode)
+
+![Dashboard Overview Dark](./public/screenshots/dashboard-overview-dark.png)
+
+---
+
+## Dashboard Analytics (Dark Mode)
+
+![Dashboard Analytics Dark](./public/screenshots/dashboard-analytics-dark.png)
+
+---
+
+## Dashboard Transactions (Dark Mode)
+
+![Dashboard Transactions Dark](./public/screenshots/dashboard-transactions-dark.png)
+
+---
+
+## Upload CSV (Dark Mode)
+
+![Upload CSV Dark](./public/screenshots/upload-dark.png)
+
+---
+
+## Automatic Reports (Dark Mode)
+
+![Reports Dark](./public/screenshots/reports.png)
+
+---
+
+## Login (Dark Mode)
+
+![Login Dark](./public/screenshots/login.png)
+
+---
+
+# Funcionalidades
+
+- autenticação com Supabase Auth;
+- login e logout;
+- proteção de rotas privadas;
+- upload de planilhas CSV;
+- validação automática de colunas;
+- preview dos dados importados;
+- dashboard com métricas financeiras;
+- gráficos interativos;
+- relatórios automáticos;
+- persistência de dados com Supabase;
+- separação de dados por usuário;
+- tema claro e escuro;
+- interface responsiva;
+- análise visual de receitas e despesas.
+
+---
+
+# Stack
+
+## Frontend
+
+- Next.js
+- React
+- TypeScript
+- Tailwind CSS
+- Recharts
+
+## Backend / Infra
+
+- Supabase
+- PostgreSQL
+- Supabase Auth
+
+---
+
+# Arquitetura
+
+```bash
+src/
+ ├── app/
+ ├── components/
+ ├── lib/
+ ├── types/
+```
+
+---
+
+# Fluxo da aplicação
+
+```text
+Usuário faz login
+        ↓
+Usuário envia CSV
+        ↓
+Sistema valida colunas
+        ↓
+Dados são salvos no Supabase
+        ↓
+Dashboard é atualizado automaticamente
+        ↓
+Relatórios e gráficos são gerados
+```
+
+---
+
+# Como rodar localmente
+
+## Clone o projeto
+
+```bash
+git clone https://github.com/winnie-s3/dashflow.git
+```
+
+## Entre na pasta
+
+```bash
+cd dashflow
+```
+
+## Instale as dependências
+
+```bash
+npm install
+```
+
+## Configure as variáveis de ambiente
+
+Crie um arquivo `.env.local`
+
+```env
+NEXT_PUBLIC_SUPABASE_URL=YOUR_SUPABASE_URL
+NEXT_PUBLIC_SUPABASE_ANON_KEY=YOUR_SUPABASE_ANON_KEY
+```
+
+## Rode o projeto
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+---
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+# Roadmap
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- [x] Upload CSV
+- [x] Dashboard financeiro
+- [x] Relatórios automáticos
+- [x] Login e autenticação
+- [x] Persistência com Supabase
+- [x] Tema claro/escuro
+- [x] Multiusuário
+- [ ] Upload XLSX
+- [ ] Exportação PDF
+- [ ] Dashboard customizável
+- [ ] Compartilhamento de relatórios
+- [ ] Multiempresa
+- [ ] Integração com APIs externas
 
-## Learn More
+---
 
-To learn more about Next.js, take a look at the following resources:
+# Motivação
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+O projeto foi criado com foco em construção rápida de MVPs SaaS utilizando IA para acelerar desenvolvimento, prototipagem e implementação de interfaces modernas.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+O objetivo é validar rapidamente soluções internas voltadas para pequenas empresas e operações que ainda dependem fortemente de processos manuais.
 
-## Deploy on Vercel
+---
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+# Possíveis públicos
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- escritórios;
+- imobiliárias;
+- contabilidade;
+- RH;
+- financeiro;
+- empresas familiares;
+- pequenos negócios que usam Excel e WhatsApp como principal fluxo operacional.
+
+---
+
+# Estratégia do produto
+
+O foco do DashFlow não é vender “tecnologia”, e sim:
+
+- economia de tempo;
+- automação operacional;
+- organização;
+- redução de erros;
+- redução de retrabalho;
+- visualização rápida de dados.
+
+---
+
+# Deploy
+
+Em breve.
+
+---
+
+# Status
+
+Projeto em desenvolvimento contínuo.
