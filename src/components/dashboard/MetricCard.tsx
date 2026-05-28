@@ -6,12 +6,18 @@ type MetricCardProps = {
 
 export function MetricCard({ title, value, description }: MetricCardProps) {
   return (
-    <div className="rounded-2xl border border-slate-800 bg-slate-900 p-5">
-      <p className="text-sm text-slate-400">{title}</p>
+    <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition hover:shadow-md dark:border-slate-800 dark:bg-slate-900">
+      <p className="text-sm font-medium text-slate-500 dark:text-slate-400">
+        {title}
+      </p>
 
-      <strong className="mt-3 block text-2xl text-white">{value}</strong>
+      <strong className="mt-3 block text-2xl font-bold text-slate-950 dark:text-white">
+        {value}
+      </strong>
 
-      <p className="mt-2 text-sm text-slate-500">{description}</p>
+      <p className="mt-2 text-sm text-slate-500 dark:text-slate-500">
+        {description}
+      </p>
     </div>
   );
 }

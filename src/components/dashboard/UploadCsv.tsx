@@ -15,30 +15,18 @@ type CsvRow = {
   status?: string;
 };
 
-const requiredColumns = [
-  "data",
-  "categoria",
-  "cliente",
-  "descricao",
-  "valor",
-  "status",
-];
+const requiredColumns = ["data", "categoria", "cliente", "descricao", "valor", "status"];
 
 function normalizeStatus(status?: string) {
   const value = String(status ?? "").trim().toLowerCase();
-
   if (value === "pago") return "pago";
   if (value === "pendente") return "pendente";
-
   return "pendente";
 }
 
 function normalizeAmount(value?: string) {
   const rawValue = String(value ?? "").trim();
-
-  if (!rawValue) {
-    return 0;
-  }
+  if (!rawValue) return 0;
 
   const cleanValue = rawValue
     .replace("R$", "")
@@ -47,7 +35,6 @@ function normalizeAmount(value?: string) {
     .replace(",", ".");
 
   const amount = Number(cleanValue);
-
   return Number.isNaN(amount) ? 0 : amount;
 }
 
@@ -65,15 +52,11 @@ function detectTransactionType(category?: string) {
     "salario",
   ];
 
-  const isExpense = expenseWords.some((word) => value.includes(word));
-
-  return isExpense ? "despesa" : "receita";
+  return expenseWords.some((word) => value.includes(word)) ? "despesa" : "receita";
 }
 
 function validateColumns(fields: string[] | undefined) {
-  if (!fields) {
-    return "Não foi possível identificar as colunas do CSV.";
-  }
+  if (!fields) return "Não foi possível identificar as colunas do CSV.";
 
   const normalizedFields = fields.map((field) => field.trim().toLowerCase());
 
@@ -105,7 +88,7 @@ export function UploadCsv() {
 
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [error, setError] = useState<string | null>(null);
-  const [fileName, setFileName] = useState<string>("");
+  const [fileName, setFileName] = useState("");
   const [isImporting, setIsImporting] = useState(false);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
@@ -113,6 +96,7 @@ export function UploadCsv() {
     const file = event.target.files?.[0];
 
     setError(null);
+    setSuccessMessage(null);
     setTransactions([]);
 
     if (!file) return;
@@ -133,9 +117,7 @@ export function UploadCsv() {
 
         const parsedTransactions = result.data
           .filter((row) =>
-            Object.values(row).some(
-              (value) => String(value ?? "").trim() !== ""
-            )
+            Object.values(row).some((value) => String(value ?? "").trim() !== "")
           )
           .map(convertRowToTransaction);
 
@@ -164,17 +146,34 @@ export function UploadCsv() {
       setError(null);
       setSuccessMessage(null);
 
-      const { error } = await supabase.from("transactions").insert(transactions);
+      const { data: sessionData } = await supabase.auth.getSession();
+      const userId = sessionData.session?.user.id;
+
+      if (!userId) {
+        setError("Usuário não autenticado.");
+        return;
+      }
+
+      const transactionsWithUserId = transactions.map((transaction) => ({
+        ...transaction,
+        user_id: userId,
+      }));
+
+      const { error } = await supabase
+        .from("transactions")
+        .insert(transactionsWithUserId);
 
       if (error) {
         setError(`Erro ao salvar no Supabase: ${error.message}`);
         return;
       }
 
-      localStorage.setItem("dashflow-transactions", JSON.stringify(transactions));
+      localStorage.setItem(
+        "dashflow-transactions",
+        JSON.stringify(transactionsWithUserId)
+      );
 
       setSuccessMessage("Dados importados com sucesso!");
-
       router.push("/dashboard");
     } catch {
       setError("Erro inesperado ao importar os dados.");
@@ -185,33 +184,34 @@ export function UploadCsv() {
 
   return (
     <div className="space-y-6">
-      <section className="rounded-2xl border border-slate-800 bg-slate-900 p-6">
+      <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
         <div>
-          <p className="text-sm text-cyan-300">Importação de dados</p>
+          <p className="text-sm font-medium text-blue-600 dark:text-blue-400">
+            Importação de dados
+          </p>
 
-          <h2 className="mt-1 text-3xl font-bold text-white">
+          <h2 className="mt-1 text-3xl font-bold text-slate-950 dark:text-white">
             Upload de planilha CSV
           </h2>
 
-          <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-400">
+          <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600 dark:text-slate-400">
             Envie uma planilha com dados financeiros ou operacionais. O sistema
             vai ler o arquivo, validar as colunas e mostrar uma prévia dos dados
             antes da importação.
           </p>
         </div>
 
-        <div className="mt-6 rounded-2xl border border-dashed border-slate-700 bg-slate-950 p-6">
+        <div className="mt-6 rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-6 dark:border-slate-700 dark:bg-slate-950">
           <label
             htmlFor="csv-file"
-            className="flex cursor-pointer flex-col items-center justify-center rounded-xl p-6 text-center hover:bg-slate-900"
+            className="flex cursor-pointer flex-col items-center justify-center rounded-xl p-6 text-center transition hover:bg-slate-200 dark:hover:bg-slate-900"
           >
-            <span className="text-lg font-semibold text-white">
+            <span className="text-lg font-semibold text-slate-950 dark:text-white">
               Clique para selecionar um CSV
             </span>
 
-            <span className="mt-2 text-sm text-slate-400">
-              Colunas esperadas: data, categoria, cliente, descricao, valor,
-              status
+            <span className="mt-2 text-sm text-slate-500 dark:text-slate-400">
+              Colunas esperadas: data, categoria, cliente, descricao, valor, status
             </span>
 
             <input
@@ -225,34 +225,36 @@ export function UploadCsv() {
         </div>
 
         {fileName && (
-          <p className="mt-4 text-sm text-slate-400">
+          <p className="mt-4 text-sm text-slate-600 dark:text-slate-400">
             Arquivo selecionado:{" "}
-            <span className="font-medium text-white">{fileName}</span>
+            <span className="font-medium text-slate-950 dark:text-white">
+              {fileName}
+            </span>
           </p>
         )}
 
         {error && (
-          <div className="mt-4 rounded-xl border border-red-500/30 bg-red-500/10 p-4 text-sm text-red-300">
+          <div className="mt-4 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700 dark:border-red-900 dark:bg-red-950 dark:text-red-300">
             {error}
           </div>
         )}
 
         {successMessage && (
-          <div className="mt-4 rounded-xl border border-emerald-500/30 bg-emerald-500/10 p-4 text-sm text-emerald-300">
+          <div className="mt-4 rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-700 dark:border-emerald-900 dark:bg-emerald-950 dark:text-emerald-300">
             {successMessage}
           </div>
         )}
       </section>
 
       {transactions.length > 0 && (
-        <section className="rounded-2xl border border-slate-800 bg-slate-900 p-6">
+        <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
           <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
             <div>
-              <h3 className="text-lg font-semibold text-white">
+              <h3 className="text-lg font-semibold text-slate-950 dark:text-white">
                 Preview dos dados
               </h3>
 
-              <p className="mt-1 text-sm text-slate-400">
+              <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
                 {transactions.length} registros encontrados no arquivo.
               </p>
             </div>
@@ -260,7 +262,7 @@ export function UploadCsv() {
             <button
               onClick={handleConfirmImport}
               disabled={isImporting}
-              className="rounded-xl bg-cyan-400 px-5 py-3 font-semibold text-slate-950 transition hover:bg-cyan-300 disabled:cursor-not-allowed disabled:opacity-60"
+              className="rounded-xl bg-blue-600 px-5 py-3 font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
             >
               {isImporting ? "Importando..." : "Confirmar importação"}
             </button>
@@ -268,7 +270,7 @@ export function UploadCsv() {
 
           <div className="mt-6 overflow-x-auto">
             <table className="w-full text-left text-sm">
-              <thead className="border-b border-slate-800 text-slate-400">
+              <thead className="border-b border-slate-200 text-slate-500 dark:border-slate-800 dark:text-slate-400">
                 <tr>
                   <th className="pb-3 font-medium">Data</th>
                   <th className="pb-3 font-medium">Categoria</th>
@@ -280,43 +282,44 @@ export function UploadCsv() {
                 </tr>
               </thead>
 
-              <tbody className="divide-y divide-slate-800">
+              <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                 {transactions.map((transaction, index) => (
                   <tr key={`${transaction.client}-${transaction.date}-${index}`}>
-                    <td className="py-4 text-slate-300">{transaction.date}</td>
-                    <td className="py-4 text-slate-300">
+                    <td className="py-4 text-slate-600 dark:text-slate-300">
+                      {transaction.date}
+                    </td>
+                    <td className="py-4 text-slate-600 dark:text-slate-300">
                       {transaction.category}
                     </td>
-                    <td className="py-4 text-white">{transaction.client}</td>
-                    <td className="py-4 text-slate-400">
+                    <td className="py-4 font-medium text-slate-950 dark:text-white">
+                      {transaction.client}
+                    </td>
+                    <td className="py-4 text-slate-500 dark:text-slate-400">
                       {transaction.description}
                     </td>
-
                     <td className="py-4">
                       <span
                         className={`rounded-full px-3 py-1 text-xs font-medium ${
                           transaction.type === "receita"
-                            ? "bg-cyan-400/10 text-cyan-300"
-                            : "bg-slate-700 text-slate-300"
+                            ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300"
+                            : "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300"
                         }`}
                       >
                         {transaction.type}
                       </span>
                     </td>
-
                     <td className="py-4">
                       <span
                         className={`rounded-full px-3 py-1 text-xs font-medium ${
                           transaction.status === "pago"
-                            ? "bg-emerald-400/10 text-emerald-300"
-                            : "bg-amber-400/10 text-amber-300"
+                            ? "bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300"
+                            : "bg-amber-50 text-amber-700 dark:bg-amber-950 dark:text-amber-300"
                         }`}
                       >
                         {transaction.status}
                       </span>
                     </td>
-
-                    <td className="py-4 text-slate-300">
+                    <td className="py-4 text-slate-600 dark:text-slate-300">
                       {new Intl.NumberFormat("pt-BR", {
                         style: "currency",
                         currency: "BRL",

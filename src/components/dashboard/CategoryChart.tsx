@@ -11,7 +11,7 @@ type CategoryChartProps = {
   data: CategoryData[];
 };
 
-const COLORS = ["#22d3ee", "#38bdf8", "#64748b", "#94a3b8"];
+const COLORS = ["#2563eb", "#16a34a", "#f97316", "#9333ea", "#e11d48"];
 
 const currencyFormatter = (value: number) => {
   return new Intl.NumberFormat("pt-BR", {
@@ -23,13 +23,13 @@ const currencyFormatter = (value: number) => {
 
 export function CategoryChart({ data }: CategoryChartProps) {
   return (
-    <div className="rounded-2xl border border-slate-800 bg-slate-900 p-6">
+    <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
       <div>
-        <h3 className="text-lg font-semibold text-white">
+        <h3 className="text-lg font-semibold text-slate-950 dark:text-white">
           Valores por categoria
         </h3>
 
-        <p className="mt-1 text-sm text-slate-400">
+        <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
           Distribuição dos dados importados
         </p>
       </div>
@@ -53,13 +53,13 @@ export function CategoryChart({ data }: CategoryChartProps) {
             <Tooltip
               formatter={(value) => currencyFormatter(Number(value))}
               contentStyle={{
-                backgroundColor: "#020617",
-                border: "1px solid #1e293b",
+                backgroundColor: "#ffffff",
+                border: "1px solid #e2e8f0",
                 borderRadius: "12px",
-                color: "#fff",
+                color: "#0f172a",
               }}
               labelStyle={{
-                color: "#e2e8f0",
+                color: "#0f172a",
               }}
             />
           </PieChart>
@@ -78,10 +78,12 @@ export function CategoryChart({ data }: CategoryChartProps) {
                 style={{ backgroundColor: COLORS[index % COLORS.length] }}
               />
 
-              <span className="text-slate-300">{item.name}</span>
+              <span className="text-slate-600 dark:text-slate-300">
+                {item.name}
+              </span>
             </div>
 
-            <span className="font-medium text-white">
+            <span className="font-medium text-slate-950 dark:text-white">
               {currencyFormatter(item.value)}
             </span>
           </div>

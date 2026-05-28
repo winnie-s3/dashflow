@@ -1,8 +1,8 @@
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
-import { DashboardClient } from "@/components/dashboard/DashboardClient";
 import { Sidebar } from "@/components/dashboard/Sidebar";
+import { SettingsClient } from "@/components/dashboard/SettingsClient";
 
-export default function DashboardPage() {
+export default function SettingsPage() {
   return (
     <ProtectedRoute>
       <main className="min-h-screen bg-slate-100 text-slate-950 dark:bg-slate-950 dark:text-slate-100">
@@ -10,7 +10,7 @@ export default function DashboardPage() {
           <Sidebar />
 
           <section className="flex-1 p-6 md:p-8">
-            <DashboardClient />
+            <SettingsClient />
           </section>
         </div>
       </main>

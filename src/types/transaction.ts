@@ -4,6 +4,7 @@ export type TransactionType = "receita" | "despesa";
 
 export type Transaction = {
   id?: string;
+  user_id?: string;
   date: string;
   category: string;
   client: string;

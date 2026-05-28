@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
+import { supabase } from "@/lib/supabase";
 import { Transaction } from "@/types/transaction";
 import {
   calculateDashboardMetrics,
@@ -19,26 +20,92 @@ import { TransactionsTable } from "./TransactionsTable";
 
 export function DashboardClient() {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
-  const [isLoaded, setIsLoaded] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    const storedTransactions = localStorage.getItem("dashflow-transactions");
+  async function loadTransactions() {
+    try {
+      setIsLoading(true);
+      setError(null);
 
-    if (storedTransactions) {
-      const parsedTransactions = JSON.parse(storedTransactions) as Transaction[];
-      setTransactions(parsedTransactions);
+      const { data: sessionData } = await supabase.auth.getSession();
+
+      const userId = sessionData.session?.user.id;
+
+      if (!userId) {
+        setError("Usuário não autenticado.");
+        return;
+      }
+
+      const { data, error } = await supabase
+        .from("transactions")
+        .select("*")
+        .eq("user_id", userId)
+        .order("created_at", { ascending: false });
+
+      if (error) {
+        setError(`Erro ao buscar dados: ${error.message}`);
+        return;
+      }
+
+      setTransactions((data ?? []) as Transaction[]);
+    } catch {
+      setError("Erro inesperado ao carregar os dados.");
+    } finally {
+      setIsLoading(false);
     }
-
-    setIsLoaded(true);
-  }, []);
-
-  function handleClearData() {
-    localStorage.removeItem("dashflow-transactions");
-    setTransactions([]);
   }
 
-  if (!isLoaded) {
-    return null;
+  async function handleClearData() {
+    const { data: sessionData } = await supabase.auth.getSession();
+
+    const userId = sessionData.session?.user.id;
+
+    if (!userId) {
+      setError("Usuário não autenticado.");
+      return;
+    }
+
+    const { error } = await supabase
+      .from("transactions")
+      .delete()
+      .eq("user_id", userId);
+
+    if (error) {
+      setError(`Erro ao limpar dados: ${error.message}`);
+      return;
+    }
+
+    setTransactions([]);
+    localStorage.removeItem("dashflow-transactions");
+  }
+
+  useEffect(() => {
+    loadTransactions();
+  }, []);
+
+  if (isLoading) {
+    return (
+      <>
+        <DashboardHeader />
+
+        <section className="mt-8 rounded-2xl border border-slate-800 bg-slate-900 p-10 text-center">
+          <p className="text-sm text-slate-400">Carregando dashboard...</p>
+        </section>
+      </>
+    );
+  }
+
+  if (error) {
+    return (
+      <>
+        <DashboardHeader />
+
+        <section className="mt-8 rounded-2xl border border-red-500/30 bg-red-500/10 p-6 text-red-300">
+          {error}
+        </section>
+      </>
+    );
   }
 
   if (transactions.length === 0) {
@@ -80,7 +147,7 @@ export function DashboardClient() {
       <div className="mt-6 flex justify-end">
         <button
           onClick={handleClearData}
-          className="rounded-xl border border-slate-700 px-4 py-2 text-sm text-slate-300 hover:bg-slate-800"
+          className="rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 shadow-sm transition hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
         >
           Limpar dados importados
         </button>
@@ -96,13 +163,12 @@ export function DashboardClient() {
       <section className="mt-8 grid gap-6 xl:grid-cols-3">
         <CategoryChart data={categoryData} />
 
-        <div className="rounded-2xl border border-slate-800 bg-slate-900 p-6 xl:col-span-2">
-          <h3 className="text-lg font-semibold text-white">Análise rápida</h3>
+        <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900 xl:col-span-2">
+          <h3 className="text-lg font-semibold text-slate-950 dark:text-white">Análise rápida</h3>
 
-          <p className="mt-3 text-sm leading-6 text-slate-400">
-            Os dados importados foram organizados automaticamente em indicadores,
-            categorias e visão mensal. Essa análise ajuda a identificar receitas,
-            despesas, pendências e oportunidades de melhoria operacional.
+          <p className="mt-3 text-sm leading-6 text-slate-600 dark:text-slate-400">
+            Os dados importados foram carregados do banco e organizados
+            automaticamente em indicadores, categorias e visão mensal.
           </p>
         </div>
       </section>

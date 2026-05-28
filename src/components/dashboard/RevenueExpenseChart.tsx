@@ -30,29 +30,32 @@ const currencyFormatter = (value: number) => {
 
 export function RevenueExpenseChart({ data }: RevenueExpenseChartProps) {
   return (
-    <div className="rounded-2xl border border-slate-800 bg-slate-900 p-6 xl:col-span-2">
+    <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900 xl:col-span-2">
       <div>
-        <h3 className="text-lg font-semibold text-white">
+        <h3 className="text-lg font-semibold text-slate-950 dark:text-white">
           Receita x Despesa
         </h3>
-        <p className="mt-1 text-sm text-slate-400">Comparativo mensal</p>
+
+        <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+          Comparativo mensal
+        </p>
       </div>
 
       <div className="mt-8 h-72">
         <ResponsiveContainer width="100%" height="100%">
           <BarChart data={data}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
+            <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
 
             <XAxis
               dataKey="month"
-              stroke="#94a3b8"
+              stroke="#64748b"
               fontSize={12}
               tickLine={false}
               axisLine={false}
             />
 
             <YAxis
-              stroke="#94a3b8"
+              stroke="#64748b"
               fontSize={12}
               tickLine={false}
               axisLine={false}
@@ -62,20 +65,30 @@ export function RevenueExpenseChart({ data }: RevenueExpenseChartProps) {
             <Tooltip
               formatter={(value) => currencyFormatter(Number(value))}
               contentStyle={{
-                backgroundColor: "#020617",
-                border: "1px solid #1e293b",
+                backgroundColor: "#ffffff",
+                border: "1px solid #e2e8f0",
                 borderRadius: "12px",
-                color: "#fff",
+                color: "#0f172a",
               }}
-              labelStyle={{
-                color: "#e2e8f0",
-              }}
+              labelStyle={{ color: "#0f172a" }}
             />
 
-            <Bar dataKey="receita" fill="#22d3ee" radius={[8, 8, 0, 0]} />
-            <Bar dataKey="despesa" fill="#475569" radius={[8, 8, 0, 0]} />
+            <Bar dataKey="receita" fill="#2563eb" radius={[8, 8, 0, 0]} />
+            <Bar dataKey="despesa" fill="#f97316" radius={[8, 8, 0, 0]} />
           </BarChart>
         </ResponsiveContainer>
+      </div>
+
+      <div className="mt-4 flex gap-4 text-sm">
+        <div className="flex items-center gap-2 text-slate-600 dark:text-slate-300">
+          <span className="h-3 w-3 rounded-full bg-blue-600" />
+          Receita
+        </div>
+
+        <div className="flex items-center gap-2 text-slate-600 dark:text-slate-300">
+          <span className="h-3 w-3 rounded-full bg-orange-500" />
+          Despesa
+        </div>
       </div>
     </div>
   );
