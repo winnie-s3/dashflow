@@ -60,7 +60,7 @@ O foco principal é:
 
 ## Upload CSV (Dark Mode)
 
-![Upload CSV Dark](./public/screenshots/upload.png)
+![Upload CSV Dark](./public/screenshots/upload-preview.png)
 
 ---
 
