@@ -11,27 +11,32 @@ type ThemeContextData = {
 
 const ThemeContext = createContext({} as ThemeContextData);
 
+function getInitialTheme(): Theme {
+  if (typeof window === "undefined") {
+    return "light";
+  }
+
+  const savedTheme = localStorage.getItem("dashflow-theme");
+
+  if (savedTheme === "dark" || savedTheme === "light") {
+    return savedTheme;
+  }
+
+  return "light";
+}
+
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setTheme] = useState<Theme>("light");
+  const [theme, setTheme] = useState<Theme>(getInitialTheme);
 
   useEffect(() => {
-    const savedTheme = localStorage.getItem("dashflow-theme") as Theme | null;
-
-    if (savedTheme) {
-      setTheme(savedTheme);
-      document.documentElement.classList.toggle("dark", savedTheme === "dark");
-      return;
-    }
-
-    document.documentElement.classList.remove("dark");
-  }, []);
+    document.documentElement.classList.toggle("dark", theme === "dark");
+    localStorage.setItem("dashflow-theme", theme);
+  }, [theme]);
 
   function toggleTheme() {
-    const nextTheme = theme === "light" ? "dark" : "light";
-
-    setTheme(nextTheme);
-    localStorage.setItem("dashflow-theme", nextTheme);
-    document.documentElement.classList.toggle("dark", nextTheme === "dark");
+    setTheme((currentTheme) =>
+      currentTheme === "light" ? "dark" : "light"
+    );
   }
 
   return (
