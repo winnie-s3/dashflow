@@ -6,26 +6,45 @@ import { useRouter } from "next/navigation";
 import { Transaction } from "@/types/transaction";
 import { supabase } from "@/lib/supabase";
 
-type CsvRow = {
-  data?: string;
-  categoria?: string;
-  cliente?: string;
-  descricao?: string;
-  valor?: string;
-  status?: string;
+type RawCsvRow = Record<string, string>;
+
+type ColumnMapping = {
+  date: string;
+  category: string;
+  client: string;
+  description: string;
+  amount: string;
+  status: string;
 };
 
-const requiredColumns = ["data", "categoria", "cliente", "descricao", "valor", "status"];
+const defaultMapping: ColumnMapping = {
+  date: "",
+  category: "",
+  client: "",
+  description: "",
+  amount: "",
+  status: "",
+};
 
 function normalizeStatus(status?: string) {
   const value = String(status ?? "").trim().toLowerCase();
-  if (value === "pago") return "pago";
-  if (value === "pendente") return "pendente";
-  return "pendente";
+
+  if (
+    value.includes("pendente") ||
+    value.includes("aberto") ||
+    value.includes("em aberto") ||
+    value.includes("não pago") ||
+    value.includes("nao pago")
+  ) {
+    return "pendente";
+  }
+
+  return "pago";
 }
 
 function normalizeAmount(value?: string) {
   const rawValue = String(value ?? "").trim();
+
   if (!rawValue) return 0;
 
   const cleanValue = rawValue
@@ -35,11 +54,12 @@ function normalizeAmount(value?: string) {
     .replace(",", ".");
 
   const amount = Number(cleanValue);
+
   return Number.isNaN(amount) ? 0 : amount;
 }
 
-function detectTransactionType(category?: string) {
-  const value = String(category ?? "").trim().toLowerCase();
+function detectTransactionType(category?: string, description?: string) {
+  const value = `${category ?? ""} ${description ?? ""}`.trim().toLowerCase();
 
   const expenseWords = [
     "despesa",
@@ -50,47 +70,88 @@ function detectTransactionType(category?: string) {
     "conta",
     "salário",
     "salario",
+    "pagamento",
+    "custo",
+    "taxa",
   ];
 
-  return expenseWords.some((word) => value.includes(word)) ? "despesa" : "receita";
+  return expenseWords.some((word) => value.includes(word))
+    ? "despesa"
+    : "receita";
 }
 
-function validateColumns(fields: string[] | undefined) {
-  if (!fields) return "Não foi possível identificar as colunas do CSV.";
+function getValue(row: RawCsvRow, columnName: string) {
+  if (!columnName) return "";
 
-  const normalizedFields = fields.map((field) => field.trim().toLowerCase());
+  return String(row[columnName] ?? "").trim();
+}
 
-  const missingColumns = requiredColumns.filter(
-    (column) => !normalizedFields.includes(column)
+function convertRowToTransaction(
+  row: RawCsvRow,
+  mapping: ColumnMapping
+): Transaction {
+  const category = getValue(row, mapping.category) || "Sem categoria";
+  const description = getValue(row, mapping.description) || "Sem descrição";
+
+  return {
+    date: getValue(row, mapping.date) || "Sem data",
+    category,
+    client: getValue(row, mapping.client) || "Não informado",
+    description,
+    amount: normalizeAmount(getValue(row, mapping.amount)),
+    status: normalizeStatus(getValue(row, mapping.status)),
+    type: detectTransactionType(category, description),
+  };
+}
+
+function guessColumn(columns: string[], possibleNames: string[]) {
+  const normalizedColumns = columns.map((column) => ({
+    original: column,
+    normalized: column.toLowerCase().trim(),
+  }));
+
+  const foundColumn = normalizedColumns.find((column) =>
+    possibleNames.some((possibleName) =>
+      column.normalized.includes(possibleName)
+    )
   );
 
-  if (missingColumns.length > 0) {
-    return `Colunas obrigatórias ausentes: ${missingColumns.join(", ")}`;
-  }
-
-  return null;
+  return foundColumn?.original ?? "";
 }
 
-function convertRowToTransaction(row: CsvRow): Transaction {
+function createInitialMapping(columns: string[]): ColumnMapping {
   return {
-    date: String(row.data ?? "").trim(),
-    category: String(row.categoria ?? "").trim(),
-    client: String(row.cliente ?? "").trim(),
-    description: String(row.descricao ?? "").trim(),
-    amount: normalizeAmount(row.valor),
-    status: normalizeStatus(row.status),
-    type: detectTransactionType(row.categoria),
+    date: guessColumn(columns, ["data", "date", "vencimento", "emissão", "emissao"]),
+    category: guessColumn(columns, ["categoria", "category", "tipo", "grupo"]),
+    client: guessColumn(columns, ["cliente", "client", "nome", "empresa", "fornecedor"]),
+    description: guessColumn(columns, ["descrição", "descricao", "description", "detalhe", "histórico", "historico"]),
+    amount: guessColumn(columns, ["valor", "total", "amount", "preço", "preco", "receita", "despesa"]),
+    status: guessColumn(columns, ["status", "situação", "situacao", "pagamento"]),
   };
 }
 
 export function UploadCsv() {
   const router = useRouter();
 
+  const [rawRows, setRawRows] = useState<RawCsvRow[]>([]);
+  const [columns, setColumns] = useState<string[]>([]);
+  const [mapping, setMapping] = useState<ColumnMapping>(defaultMapping);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
+
   const [error, setError] = useState<string | null>(null);
   const [fileName, setFileName] = useState("");
   const [isImporting, setIsImporting] = useState(false);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+
+  function resetImport() {
+    setRawRows([]);
+    setColumns([]);
+    setMapping(defaultMapping);
+    setTransactions([]);
+    setError(null);
+    setSuccessMessage(null);
+    setFileName("");
+  }
 
   function handleFileChange(event: React.ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
@@ -98,46 +159,69 @@ export function UploadCsv() {
     setError(null);
     setSuccessMessage(null);
     setTransactions([]);
+    setRawRows([]);
+    setColumns([]);
 
     if (!file) return;
 
     setFileName(file.name);
 
-    Papa.parse<CsvRow>(file, {
+    Papa.parse<RawCsvRow>(file, {
       header: true,
       skipEmptyLines: true,
       delimiter: "",
       complete: (result) => {
-        const columnError = validateColumns(result.meta.fields);
+        const detectedColumns = result.meta.fields ?? [];
 
-        if (columnError) {
-          setError(columnError);
+        if (detectedColumns.length === 0) {
+          setError("Não foi possível identificar as colunas do arquivo.");
           return;
         }
 
-        const parsedTransactions = result.data
-          .filter((row) =>
-            Object.values(row).some((value) => String(value ?? "").trim() !== "")
-          )
-          .map(convertRowToTransaction);
-
-        const hasRowsWithoutAmount = parsedTransactions.some(
-          (transaction) => transaction.amount === 0
+        const cleanedRows = result.data.filter((row) =>
+          Object.values(row).some((value) => String(value ?? "").trim() !== "")
         );
 
-        if (hasRowsWithoutAmount) {
-          setError(
-            "Algumas linhas vieram sem valor ou com valor inválido. Corrija a coluna valor no CSV."
-          );
+        if (cleanedRows.length === 0) {
+          setError("O arquivo não possui registros válidos para importar.");
           return;
         }
 
-        setTransactions(parsedTransactions);
+        setColumns(detectedColumns);
+        setRawRows(cleanedRows);
+        setMapping(createInitialMapping(detectedColumns));
       },
       error: () => {
         setError("Erro ao ler o arquivo CSV.");
       },
     });
+  }
+
+  function handleGeneratePreview() {
+    setError(null);
+    setSuccessMessage(null);
+
+    if (!mapping.amount) {
+      setError("Selecione qual coluna representa o valor.");
+      return;
+    }
+
+    const parsedTransactions = rawRows.map((row) =>
+      convertRowToTransaction(row, mapping)
+    );
+
+    const hasRowsWithoutAmount = parsedTransactions.some(
+      (transaction) => transaction.amount === 0
+    );
+
+    if (hasRowsWithoutAmount) {
+      setError(
+        "Algumas linhas vieram sem valor ou com valor inválido. Confira o mapeamento da coluna de valor."
+      );
+      return;
+    }
+
+    setTransactions(parsedTransactions);
   }
 
   async function handleConfirmImport() {
@@ -182,6 +266,39 @@ export function UploadCsv() {
     }
   }
 
+  function renderSelect(
+    label: string,
+    field: keyof ColumnMapping,
+    required = false
+  ) {
+    return (
+      <div>
+        <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
+          {label} {required && <span className="text-red-500">*</span>}
+        </label>
+
+        <select
+          value={mapping[field]}
+          onChange={(event) =>
+            setMapping((currentMapping) => ({
+              ...currentMapping,
+              [field]: event.target.value,
+            }))
+          }
+          className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700 outline-none transition focus:border-blue-500 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-200"
+        >
+          <option value="">Não usar</option>
+
+          {columns.map((column) => (
+            <option key={column} value={column}>
+              {column}
+            </option>
+          ))}
+        </select>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
@@ -195,9 +312,9 @@ export function UploadCsv() {
           </h2>
 
           <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600 dark:text-slate-400">
-            Envie uma planilha com dados financeiros ou operacionais. O sistema
-            vai ler o arquivo, validar as colunas e mostrar uma prévia dos dados
-            antes da importação.
+            Envie uma planilha CSV e escolha quais colunas representam os dados
+            principais. Assim o DashFlow consegue importar arquivos com modelos
+            diferentes.
           </p>
         </div>
 
@@ -211,7 +328,8 @@ export function UploadCsv() {
             </span>
 
             <span className="mt-2 text-sm text-slate-500 dark:text-slate-400">
-              Colunas esperadas: data, categoria, cliente, descricao, valor, status
+              O arquivo pode ter nomes de colunas diferentes. Você fará o
+              mapeamento antes da importação.
             </span>
 
             <input
@@ -225,12 +343,22 @@ export function UploadCsv() {
         </div>
 
         {fileName && (
-          <p className="mt-4 text-sm text-slate-600 dark:text-slate-400">
-            Arquivo selecionado:{" "}
-            <span className="font-medium text-slate-950 dark:text-white">
-              {fileName}
-            </span>
-          </p>
+          <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <p className="text-sm text-slate-600 dark:text-slate-400">
+              Arquivo selecionado:{" "}
+              <span className="font-medium text-slate-950 dark:text-white">
+                {fileName}
+              </span>
+            </p>
+
+            <button
+              type="button"
+              onClick={resetImport}
+              className="rounded-xl border border-slate-200 px-4 py-2 text-sm font-medium text-slate-600 transition hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
+            >
+              Escolher outro arquivo
+            </button>
+          </div>
         )}
 
         {error && (
@@ -246,6 +374,39 @@ export function UploadCsv() {
         )}
       </section>
 
+      {rawRows.length > 0 && (
+        <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+          <div>
+            <h3 className="text-lg font-semibold text-slate-950 dark:text-white">
+              Mapeamento de colunas
+            </h3>
+
+            <p className="mt-1 text-sm leading-6 text-slate-600 dark:text-slate-400">
+              Encontramos {columns.length} colunas e {rawRows.length} registros.
+              Selecione quais colunas devem ser usadas no dashboard.
+            </p>
+          </div>
+
+          <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+            {renderSelect("Valor", "amount", true)}
+            {renderSelect("Data", "date")}
+            {renderSelect("Cliente", "client")}
+            {renderSelect("Categoria", "category")}
+            {renderSelect("Descrição", "description")}
+            {renderSelect("Status", "status")}
+          </div>
+
+          <div className="mt-6 flex flex-col gap-3 sm:flex-row">
+            <button
+              onClick={handleGeneratePreview}
+              className="rounded-xl bg-blue-600 px-5 py-3 font-semibold text-white transition hover:bg-blue-700"
+            >
+              Gerar preview
+            </button>
+          </div>
+        </section>
+      )}
+
       {transactions.length > 0 && (
         <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
           <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
@@ -255,7 +416,7 @@ export function UploadCsv() {
               </h3>
 
               <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-                {transactions.length} registros encontrados no arquivo.
+                {transactions.length} registros prontos para importação.
               </p>
             </div>
 
@@ -272,32 +433,46 @@ export function UploadCsv() {
             <table className="w-full text-left text-sm">
               <thead className="border-b border-slate-200 text-slate-500 dark:border-slate-800 dark:text-slate-400">
                 <tr>
-                  <th className="pb-3 font-medium">Data</th>
-                  <th className="pb-3 font-medium">Categoria</th>
-                  <th className="pb-3 font-medium">Cliente</th>
-                  <th className="pb-3 font-medium">Descrição</th>
-                  <th className="pb-3 font-medium">Tipo</th>
-                  <th className="pb-3 font-medium">Status</th>
-                  <th className="pb-3 font-medium">Valor</th>
+                  <th className="whitespace-nowrap pb-3 pr-6 font-medium">
+                    Data
+                  </th>
+                  <th className="whitespace-nowrap pb-3 pr-6 font-medium">
+                    Categoria
+                  </th>
+                  <th className="whitespace-nowrap pb-3 pr-6 font-medium">
+                    Cliente
+                  </th>
+                  <th className="whitespace-nowrap pb-3 pr-6 font-medium">
+                    Descrição
+                  </th>
+                  <th className="whitespace-nowrap pb-3 pr-6 font-medium">
+                    Tipo
+                  </th>
+                  <th className="whitespace-nowrap pb-3 pr-6 font-medium">
+                    Status
+                  </th>
+                  <th className="whitespace-nowrap pb-3 font-medium">
+                    Valor
+                  </th>
                 </tr>
               </thead>
 
               <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                 {transactions.map((transaction, index) => (
                   <tr key={`${transaction.client}-${transaction.date}-${index}`}>
-                    <td className="py-4 text-slate-600 dark:text-slate-300">
+                    <td className="whitespace-nowrap py-4 pr-6 text-slate-600 dark:text-slate-300">
                       {transaction.date}
                     </td>
-                    <td className="py-4 text-slate-600 dark:text-slate-300">
+                    <td className="whitespace-nowrap py-4 pr-6 text-slate-600 dark:text-slate-300">
                       {transaction.category}
                     </td>
-                    <td className="py-4 font-medium text-slate-950 dark:text-white">
+                    <td className="whitespace-nowrap py-4 pr-6 font-medium text-slate-950 dark:text-white">
                       {transaction.client}
                     </td>
-                    <td className="py-4 text-slate-500 dark:text-slate-400">
+                    <td className="min-w-52 py-4 pr-6 text-slate-500 dark:text-slate-400">
                       {transaction.description}
                     </td>
-                    <td className="py-4">
+                    <td className="whitespace-nowrap py-4 pr-6">
                       <span
                         className={`rounded-full px-3 py-1 text-xs font-medium ${
                           transaction.type === "receita"
@@ -308,7 +483,7 @@ export function UploadCsv() {
                         {transaction.type}
                       </span>
                     </td>
-                    <td className="py-4">
+                    <td className="whitespace-nowrap py-4 pr-6">
                       <span
                         className={`rounded-full px-3 py-1 text-xs font-medium ${
                           transaction.status === "pago"
@@ -319,7 +494,7 @@ export function UploadCsv() {
                         {transaction.status}
                       </span>
                     </td>
-                    <td className="py-4 text-slate-600 dark:text-slate-300">
+                    <td className="whitespace-nowrap py-4 text-slate-600 dark:text-slate-300">
                       {new Intl.NumberFormat("pt-BR", {
                         style: "currency",
                         currency: "BRL",
