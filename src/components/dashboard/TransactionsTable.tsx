@@ -28,23 +28,23 @@ export function TransactionsTable({ transactions }: TransactionsTableProps) {
         <table className="w-full text-left text-sm">
           <thead className="border-b border-slate-200 text-slate-500 dark:border-slate-800 dark:text-slate-400">
             <tr>
-              <th className="pb-3 font-medium">Cliente</th>
-              <th className="pb-3 font-medium">Categoria</th>
-              <th className="pb-3 font-medium">Tipo</th>
-              <th className="pb-3 font-medium">Status</th>
-              <th className="pb-3 font-medium">Valor</th>
-              <th className="pb-3 font-medium">Data</th>
+              <th className="whitespace-nowrap pb-3 pr-6 text-left font-medium text-slate-500 dark:text-slate-400">Cliente</th>
+              <th className="whitespace-nowrap pb-3 pr-6 text-left font-medium text-slate-500 dark:text-slate-400">Categoria</th>
+              <th className="whitespace-nowrap pb-3 pr-6 text-left font-medium text-slate-500 dark:text-slate-400">Tipo</th>
+              <th className="whitespace-nowrap pb-3 pr-6 text-left font-medium text-slate-500 dark:text-slate-400">Status</th>
+              <th className="whitespace-nowrap pb-3 pr-6 text-left font-medium text-slate-500 dark:text-slate-400">Valor</th>
+              <th className="whitespace-nowrap pb-3 pr-6 text-left font-medium text-slate-500 dark:text-slate-400">Data</th>
             </tr>
           </thead>
 
           <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
             {transactions.map((transaction, index) => (
               <tr key={`${transaction.client}-${transaction.date}-${index}`}>
-                <td className="py-4 font-medium text-slate-950 dark:text-white">
+                <td className="whitespace-nowrap py-4 pr-6 font-medium text-slate-950 dark:text-white">
                   {transaction.client}
                 </td>
 
-                <td className="py-4 text-slate-600 dark:text-slate-300">
+                <td className="whitespace-nowrap py-4 pr-6 text-slate-600 dark:text-slate-300">
                   {transaction.category}
                 </td>
 
@@ -60,7 +60,7 @@ export function TransactionsTable({ transactions }: TransactionsTableProps) {
                   </span>
                 </td>
 
-                <td className="py-4">
+                <td className="whitespace-nowrap py-4 pr-6">
                   <span
                     className={`rounded-full px-3 py-1 text-xs font-medium ${
                       transaction.status === "pago"
@@ -72,11 +72,11 @@ export function TransactionsTable({ transactions }: TransactionsTableProps) {
                   </span>
                 </td>
 
-                <td className="py-4 text-slate-600 dark:text-slate-300">
+                <td className="whitespace-nowrap py-4 pr-6 text-slate-600 dark:text-slate-300">
                   {formatCurrency(transaction.amount)}
                 </td>
 
-                <td className="py-4 text-slate-500 dark:text-slate-400">
+                <td className="whitespace-nowrap py-4 text-slate-500 dark:text-slate-400">
                   {transaction.date}
                 </td>
               </tr>

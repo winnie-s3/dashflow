@@ -11,6 +11,7 @@ import {
   groupRevenueAndExpensesByMonth,
 } from "@/lib/dashboardCalculations";
 
+import { generateQuickAnalysis } from "@/lib/generateQuickAnalysis";
 import { DashboardHeader } from "./DashboardHeader";
 import { MetricsGrid } from "./MetricsGrid";
 import { OperationalSummary } from "./OperationalSummary";
@@ -166,9 +167,8 @@ export function DashboardClient() {
         <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900 xl:col-span-2">
           <h3 className="text-lg font-semibold text-slate-950 dark:text-white">Análise rápida</h3>
 
-          <p className="mt-3 text-sm leading-6 text-slate-600 dark:text-slate-400">
-            Os dados importados foram carregados do banco e organizados
-            automaticamente em indicadores, categorias e visão mensal.
+          <p className="mt-4 text-sm leading-7 text-slate-600 dark:text-slate-300">
+            {generateQuickAnalysis(transactions)}
           </p>
         </div>
       </section>
