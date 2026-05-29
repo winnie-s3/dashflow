@@ -54,17 +54,16 @@ export function LoginForm() {
   return (
     <main className="flex min-h-screen items-center justify-center bg-slate-950 px-6 text-white">
       <section className="w-full max-w-md rounded-2xl border border-slate-800 bg-slate-900 p-8">
-        <p className="text-sm text-cyan-300">DashFlow</p>
+        <p className="text-sm font-medium text-cyan-300">DashFlow</p>
 
         <h1 className="mt-2 text-3xl font-bold">
-          {isLogin
-          ? "Ainda não tem conta? Criar uma conta"
-          : "Já tem uma conta? Voltar para login"}
+          {isLogin ? "Entrar no painel" : "Criar sua conta"}
         </h1>
 
         <p className="mt-2 text-sm leading-6 text-slate-400">
-          Acesse o painel para importar planilhas, visualizar dashboards e gerar
-          relatórios.
+          {isLogin
+            ? "Acesse sua conta para importar planilhas, visualizar dashboards e gerar relatórios."
+            : "Crie uma conta para começar a usar o DashFlow e organizar suas planilhas em dashboards."}
         </p>
 
         <form onSubmit={handleSubmit} className="mt-8 space-y-4">
@@ -104,26 +103,41 @@ export function LoginForm() {
             disabled={isLoading}
             className="w-full rounded-xl bg-cyan-400 px-5 py-3 font-semibold text-slate-950 transition hover:bg-cyan-300 disabled:cursor-not-allowed disabled:opacity-60"
           >
-            {isLoading
-              ? "Carregando..."
-              : isLogin
-              ? "Entrar"
-              : "Criar conta"}
+            {isLoading ? "Carregando..." : isLogin ? "Entrar" : "Criar conta"}
           </button>
         </form>
 
-        <button
-          type="button"
-          onClick={() => {
-            setIsLogin(!isLogin);
-            setMessage(null);
-          }}
-          className="mt-6 w-full text-sm text-slate-400 hover:text-cyan-300"
-        >
-          {isLogin
-            ? "Ainda não tem conta? Criar cadastro"
-            : "Já tem conta? Fazer login"}
-        </button>
+        <div className="mt-6 text-center text-sm text-slate-400">
+          {isLogin ? (
+            <>
+              Ainda não tem uma conta?{" "}
+              <button
+                type="button"
+                onClick={() => {
+                  setIsLogin(false);
+                  setMessage(null);
+                }}
+                className="font-medium text-cyan-300 hover:text-cyan-200"
+              >
+                Criar conta
+              </button>
+            </>
+          ) : (
+            <>
+              Já tem uma conta?{" "}
+              <button
+                type="button"
+                onClick={() => {
+                  setIsLogin(true);
+                  setMessage(null);
+                }}
+                className="font-medium text-cyan-300 hover:text-cyan-200"
+              >
+                Entrar
+              </button>
+            </>
+          )}
+        </div>
       </section>
     </main>
   );
