@@ -7,7 +7,7 @@ type TransactionsTableProps = {
 
 export function TransactionsTable({ transactions }: TransactionsTableProps) {
   return (
-    <section className="mt-8 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+    <section className="mt-6 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
       <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
         <div>
           <h3 className="text-lg font-semibold text-slate-950 dark:text-white">
@@ -24,7 +24,7 @@ export function TransactionsTable({ transactions }: TransactionsTableProps) {
         </button>
       </div>
 
-      <div className="mt-6 overflow-x-auto">
+      <div className="mt-6 -mx-4 overflow-x-auto px-4 sm:mx-0 sm:px-0">
         <table className="w-full text-left text-sm">
           <thead className="border-b border-slate-200 text-slate-500 dark:border-slate-800 dark:text-slate-400">
             <tr>

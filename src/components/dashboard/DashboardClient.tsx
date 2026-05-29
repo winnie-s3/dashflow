@@ -155,12 +155,12 @@ export function DashboardClient() {
 
       <MetricsGrid metrics={metrics} />
 
-      <section className="mt-8 grid gap-6 xl:grid-cols-3">
+      <section className="mt-6 grid gap-4 lg:grid-cols-3 lg:gap-6">
         <RevenueExpenseChart data={revenueExpenseData} />
         <OperationalSummary />
       </section>
 
-      <section className="mt-8 grid gap-6 xl:grid-cols-3">
+      <section className="mt-6 grid gap-4 lg:grid-cols-3 lg:gap-6">
         <CategoryChart data={categoryData} />
 
         <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900 xl:col-span-2">

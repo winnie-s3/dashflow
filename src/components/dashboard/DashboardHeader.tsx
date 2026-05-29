@@ -8,7 +8,7 @@ export function DashboardHeader() {
           Visão geral
         </p>
 
-        <h2 className="mt-1 text-3xl font-bold tracking-tight text-slate-950 dark:text-white">
+        <h2 className="mt-1 text-2xl font-bold tracking-tight text-slate-950 dark:text-white sm:text-3xl">
           Dashboard financeiro
         </h2>
 
@@ -19,7 +19,7 @@ export function DashboardHeader() {
 
       <Link
         href="/upload"
-        className="rounded-xl bg-slate-950 px-5 py-3 text-center text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800 dark:bg-white dark:text-slate-950 dark:hover:bg-slate-200"
+        className="w-full rounded-xl bg-slate-950 px-5 py-3 text-center text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800 dark:bg-white dark:text-slate-950 dark:hover:bg-slate-200 sm:w-auto"
       >
         Importar planilha
       </Link>

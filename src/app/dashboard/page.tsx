@@ -1,19 +1,10 @@
-import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
+import { AppLayout } from "@/components/dashboard/AppLayout";
 import { DashboardClient } from "@/components/dashboard/DashboardClient";
-import { Sidebar } from "@/components/dashboard/Sidebar";
 
 export default function DashboardPage() {
   return (
-    <ProtectedRoute>
-      <main className="min-h-screen bg-slate-100 text-slate-950 dark:bg-slate-950 dark:text-slate-100">
-        <div className="flex min-h-screen">
-          <Sidebar />
-
-          <section className="flex-1 p-6 md:p-8">
-            <DashboardClient />
-          </section>
-        </div>
-      </main>
-    </ProtectedRoute>
+    <AppLayout>
+      <DashboardClient />
+    </AppLayout>
   );
 }

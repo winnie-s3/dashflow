@@ -190,7 +190,7 @@ export function UploadCsv() {
             Importação de dados
           </p>
 
-          <h2 className="mt-1 text-3xl font-bold text-slate-950 dark:text-white">
+          <h2 className="mt-1 text-2xl font-bold text-slate-950 dark:text-white sm:text-3xl">
             Upload de planilha CSV
           </h2>
 
@@ -268,7 +268,7 @@ export function UploadCsv() {
             </button>
           </div>
 
-          <div className="mt-6 overflow-x-auto">
+          <div className="mt-6 -mx-4 overflow-x-auto px-4 sm:mx-0 sm:px-0">
             <table className="w-full text-left text-sm">
               <thead className="border-b border-slate-200 text-slate-500 dark:border-slate-800 dark:text-slate-400">
                 <tr>
