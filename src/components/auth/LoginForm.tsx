@@ -47,9 +47,8 @@ export function LoginForm() {
       return;
     }
 
-    setMessage("Cadastro criado. Agora faça login.");
-    setIsLogin(true);
-    setIsLoading(false);
+    setMessage("Conta criada com sucesso. Redirecionando para o dashboard...");
+    router.push("/dashboard");
   }
 
   return (
@@ -58,7 +57,9 @@ export function LoginForm() {
         <p className="text-sm text-cyan-300">DashFlow</p>
 
         <h1 className="mt-2 text-3xl font-bold">
-          {isLogin ? "Entrar na conta" : "Criar conta"}
+          {isLogin
+          ? "Ainda não tem conta? Criar uma conta"
+          : "Já tem uma conta? Voltar para login"}
         </h1>
 
         <p className="mt-2 text-sm leading-6 text-slate-400">
