@@ -41,9 +41,9 @@ export function RevenueExpenseChart({ data }: RevenueExpenseChartProps) {
         </p>
       </div>
 
-      <div className="mt-8 h-72">
+      <div className="mt-6 h-64 min-w-0 overflow-hidden sm:h-72">
         <ResponsiveContainer width="100%" height="100%">
-          <BarChart data={data}>
+          <BarChart data={data} margin={{ top: 10, right: 8, left: -20, bottom: 0 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
 
             <XAxis

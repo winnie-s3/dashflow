@@ -34,7 +34,7 @@ export function CategoryChart({ data }: CategoryChartProps) {
         </p>
       </div>
 
-      <div className="mt-6 h-64">
+      <div className="mt-6 h-56 min-w-0 overflow-hidden sm:h-64">
         <ResponsiveContainer width="100%" height="100%">
           <PieChart>
             <Pie

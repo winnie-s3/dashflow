@@ -144,7 +144,7 @@ export function DashboardClient() {
     <>
       <DashboardHeader />
 
-      <div className="mt-6 flex justify-end">
+      <div className="mt-4 flex justify-start sm:mt-6 sm:justify-end">
         <button
           onClick={handleClearData}
           className="rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 shadow-sm transition hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"

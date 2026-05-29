@@ -2,7 +2,7 @@ import Link from "next/link";
 
 export function DashboardHeader() {
   return (
-    <header className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
+    <header className="flex min-w-0 flex-col justify-between gap-4 md:flex-row md:items-center">
       <div>
         <p className="text-sm font-medium text-slate-500 dark:text-slate-400">
           Visão geral
@@ -19,7 +19,7 @@ export function DashboardHeader() {
 
       <Link
         href="/upload"
-        className="w-full rounded-xl bg-slate-950 px-5 py-3 text-center text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800 dark:bg-white dark:text-slate-950 dark:hover:bg-slate-200 sm:w-auto"
+        className="w-full max-w-full rounded-xl bg-slate-950 px-5 py-3 text-center text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800 dark:bg-white dark:text-slate-950 dark:hover:bg-slate-200 sm:w-auto"
       >
         Importar planilha
       </Link>

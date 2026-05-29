@@ -22,7 +22,7 @@ export function MobileHeader() {
   }
 
   return (
-    <header className="sticky top-0 z-30 border-b border-slate-200 bg-white/90 px-4 py-3 backdrop-blur dark:border-slate-800 dark:bg-slate-950/90 md:hidden">
+    <header className="sticky top-0 z-30 w-full max-w-full overflow-hidden border-b border-slate-200 bg-white/90 px-4 py-3 backdrop-blur dark:border-slate-800 dark:bg-slate-950/90 md:hidden">
       <div className="flex items-center justify-between gap-3">
         <Link href="/dashboard" className="flex items-center gap-2">
           <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-slate-950 text-xs font-bold text-white dark:bg-white dark:text-slate-950">
@@ -51,7 +51,7 @@ export function MobileHeader() {
         </div>
       </div>
 
-      <nav className="mt-3 flex gap-2 overflow-x-auto pb-1">
+      <nav className="mt-3 flex max-w-full gap-2 overflow-x-auto pb-1">
         {links.map((link) => {
           const isActive = pathname === link.href;
 

@@ -6,7 +6,9 @@
   box-sizing: border-box;
 }
 
+html,
 body {
   background: #f6f7fb;
   color: #111827;
+  overflow-x: hidden;
 }
