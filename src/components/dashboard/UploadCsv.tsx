@@ -154,6 +154,57 @@ type ImportRecord = {
   created_at: string;
 };
 
+const sampleRows: RawCsvRow[] = [
+  {
+    data: "2026-05-01",
+    categoria: "Vendas",
+    cliente: "Cliente A",
+    descricao: "Serviço mensal",
+    valor: "1500",
+    status: "pago",
+  },
+  {
+    data: "2026-05-03",
+    categoria: "Vendas",
+    cliente: "Cliente B",
+    descricao: "Projeto dashboard",
+    valor: "2500",
+    status: "pago",
+  },
+  {
+    data: "2026-05-05",
+    categoria: "Despesa",
+    cliente: "Internet",
+    descricao: "Conta mensal",
+    valor: "120",
+    status: "pago",
+  },
+  {
+    data: "2026-05-08",
+    categoria: "Software",
+    cliente: "Ferramenta online",
+    descricao: "Assinatura",
+    valor: "89",
+    status: "pago",
+  },
+  {
+    data: "2026-05-10",
+    categoria: "Vendas",
+    cliente: "Cliente C",
+    descricao: "Consultoria",
+    valor: "800",
+    status: "pendente",
+  },
+  {
+    data: "2026-05-12",
+    categoria: "Fornecedor",
+    cliente: "Fornecedor X",
+    descricao: "Compra operacional",
+    valor: "450",
+    status: "pago",
+  },
+];
+
 export function UploadCsv() {
   const router = useRouter();
 
@@ -249,6 +300,18 @@ export function UploadCsv() {
     }
 
     setTransactions(parsedTransactions);
+  }
+
+  function handleUseSampleFile() {
+    const sampleColumns = ["data", "categoria", "cliente", "descricao", "valor", "status"];
+
+    setError(null);
+    setSuccessMessage(null);
+    setTransactions([]);
+    setRawRows(sampleRows);
+    setColumns(sampleColumns);
+    setMapping(createInitialMapping(sampleColumns));
+    setFileName("arquivo-exemplo-dashflow.csv");
   }
 
   async function handleConfirmImport() {
@@ -465,6 +528,39 @@ export function UploadCsv() {
               className="hidden"
             />
           </label>
+        </div>
+
+        <div className="mt-4 flex flex-col gap-3 sm:flex-row">
+          <button
+            type="button"
+            onClick={handleUseSampleFile}
+            className="rounded-xl border border-blue-200 bg-blue-50 px-4 py-3 text-sm font-medium text-blue-700 transition hover:bg-blue-100 dark:border-blue-900 dark:bg-blue-950 dark:text-blue-300 dark:hover:bg-blue-900"
+          >
+            Usar arquivo de exemplo
+          </button>
+        </div>
+
+        <div className="mt-6 rounded-2xl border border-slate-200 bg-slate-50 p-5 dark:border-slate-800 dark:bg-slate-950">
+          <h3 className="font-semibold text-slate-950 dark:text-white">
+            Como preparar o arquivo
+          </h3>
+
+          <div className="mt-3 space-y-2 text-sm leading-6 text-slate-600 dark:text-slate-400">
+            <p>
+              O DashFlow aceita arquivos CSV com cabeçalho na primeira linha. O nome das
+              colunas não precisa seguir um padrão fixo, porque você poderá mapear cada
+              coluna antes da importação.
+            </p>
+
+            <p>
+              A única informação obrigatória é uma coluna de valor. As demais são
+              opcionais, mas ajudam o dashboard a gerar análises melhores.
+            </p>
+
+            <p>
+              Colunas recomendadas: data, categoria, cliente, descrição, valor e status.
+            </p>
+          </div>
         </div>
 
         {fileName && (
