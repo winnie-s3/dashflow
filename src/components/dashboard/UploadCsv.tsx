@@ -1,6 +1,7 @@
 "use client";
 
 import Papa from "papaparse";
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Transaction } from "@/types/transaction";
@@ -538,6 +539,12 @@ export function UploadCsv() {
           >
             Usar arquivo de exemplo
           </button>
+          <Link
+            href="/importacoes"
+            className="rounded-xl border border-slate-700 px-4 py-3 text-sm font-medium text-slate-300 transition hover:bg-slate-800"
+          >
+            Ver importações anteriores
+          </Link>
         </div>
 
         <div className="mt-6 rounded-2xl border border-slate-200 bg-slate-50 p-5 dark:border-slate-800 dark:bg-slate-950">
@@ -591,67 +598,6 @@ export function UploadCsv() {
         {successMessage && (
           <div className="mt-4 rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-700 dark:border-emerald-900 dark:bg-emerald-950 dark:text-emerald-300">
             {successMessage}
-          </div>
-        )}
-      </section>
-
-      <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
-        <div>
-          <h3 className="text-lg font-semibold text-slate-950 dark:text-white">
-            Relatórios importados
-          </h3>
-
-          <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-            Arquivos já importados na sua conta.
-          </p>
-        </div>
-
-        {isLoadingImports ? (
-          <p className="mt-4 text-sm text-slate-500 dark:text-slate-400">
-            Carregando importações...
-          </p>
-        ) : imports.length === 0 ? (
-          <div className="mt-4 rounded-xl border border-dashed border-slate-300 bg-slate-50 p-4 text-sm text-slate-600 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-400">
-            Nenhum relatório importado ainda.
-          </div>
-        ) : (
-          <div className="mt-6 space-y-3">
-            {imports.map((item) => (
-              <div
-                key={item.id}
-                className="flex flex-col justify-between gap-4 rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-950 sm:flex-row sm:items-center"
-              >
-                <div>
-                  <p className="font-medium text-slate-950 dark:text-white">
-                    {item.file_name}
-                  </p>
-
-                  <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-                    {item.total_records} registros •{" "}
-                    {new Intl.NumberFormat("pt-BR", {
-                      style: "currency",
-                      currency: "BRL",
-                    }).format(Number(item.total_amount))}{" "}
-                    •{" "}
-                    {new Date(item.created_at).toLocaleDateString("pt-BR", {
-                      day: "2-digit",
-                      month: "2-digit",
-                      year: "numeric",
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    })}
-                  </p>
-                </div>
-
-                <button
-                  type="button"
-                  onClick={() => handleDeleteImport(item.id)}
-                  className="rounded-xl border border-red-200 px-4 py-2 text-sm font-medium text-red-600 transition hover:bg-red-50 dark:border-red-900 dark:text-red-300 dark:hover:bg-red-950"
-                >
-                  Excluir
-                </button>
-              </div>
-            ))}
           </div>
         )}
       </section>

@@ -10,6 +10,7 @@ const links = [
   { label: "Upload", href: "/upload" },
   { label: "Transações", href: "/transacoes" },
   { label: "Relatórios", href: "/relatorios" },
+  { label: "Importações", href: "/importacoes" },
   { label: "Config.", href: "/configuracoes" },
 ];
 
