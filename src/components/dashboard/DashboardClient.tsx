@@ -74,7 +74,7 @@ export function DashboardClient() {
     }
 
     const { error } = await supabase
-      .from("transactions")
+      .from("imports")
       .delete()
       .eq("user_id", userId);
 
