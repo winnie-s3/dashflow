@@ -5,6 +5,8 @@ import { ImportRecord, Transaction } from "@/types/transaction";
 type TransactionsTableProps = {
   transactions: Transaction[];
   imports: ImportRecord[];
+  limit?: number;
+  showViewAllButton?: boolean;
 };
 
 function shouldShowField(
@@ -25,6 +27,8 @@ function shouldShowField(
 export function TransactionsTable({
   transactions,
   imports,
+  limit,
+  showViewAllButton = true,
 }: TransactionsTableProps) {
   const showDate = shouldShowField(transactions, "date");
   const showCategory = shouldShowField(transactions, "category");
@@ -32,7 +36,9 @@ export function TransactionsTable({
   const showDescription = shouldShowField(transactions, "description");
   const showStatus = shouldShowField(transactions, "status");
 
-  const groupedTransactions = imports.slice(0, 2).map((importItem) => ({
+  const visibleImports = typeof limit === "number" ? imports.slice(0, limit) : imports;
+
+  const groupedTransactions = visibleImports.map((importItem) => ({
     importItem,
     transactions: transactions.filter(
       (transaction) => transaction.import_id === importItem.id
@@ -52,12 +58,14 @@ export function TransactionsTable({
           </p>
         </div>
 
-        <Link
-          href="/transacoes"
-          className="rounded-xl border border-slate-200 px-4 py-2 text-center text-sm font-medium text-slate-600 transition hover:bg-slate-50 dark:border-slate-800 dark:text-slate-300 dark:hover:bg-slate-800"
-        >
-          Ver todos
-        </Link>
+        {showViewAllButton && (
+          <Link
+            href="/transacoes"
+            className="rounded-xl border border-slate-200 px-4 py-2 text-center text-sm font-medium text-slate-600 transition hover:bg-slate-50 dark:border-slate-800 dark:text-slate-300 dark:hover:bg-slate-800"
+          >
+            Ver todos
+          </Link>
+        )}
       </div>
 
       <div className="mt-6 space-y-6">

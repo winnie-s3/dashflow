@@ -8,6 +8,7 @@ import { ThemeToggle } from "@/components/theme/ThemeToggle";
 const links = [
   { label: "Dashboard", href: "/dashboard" },
   { label: "Upload", href: "/upload" },
+  { label: "Transações", href: "/transacoes" },
   { label: "Relatórios", href: "/relatorios" },
   { label: "Config.", href: "/configuracoes" },
 ];

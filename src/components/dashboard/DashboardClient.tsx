@@ -192,7 +192,7 @@ export function DashboardClient() {
         </div>
       </section>
 
-      <TransactionsTable transactions={transactions} imports={imports} />
+      <TransactionsTable transactions={transactions} imports={imports} limit={2} />
     </>
   );
 }
