@@ -90,17 +90,33 @@ function convertRowToTransaction(
   row: RawCsvRow,
   mapping: ColumnMapping
 ): Transaction {
-  const category = getValue(row, mapping.category) || "Sem categoria";
-  const description = getValue(row, mapping.description) || "Sem descrição";
+  const category = mapping.category
+    ? getValue(row, mapping.category) || "Sem categoria"
+    : "Sem categoria";
+
+  const description = mapping.description
+    ? getValue(row, mapping.description) || "Sem descrição"
+    : "Sem descrição";
 
   return {
-    date: getValue(row, mapping.date) || "Sem data",
+    date: mapping.date ? getValue(row, mapping.date) || "Sem data" : "Sem data",
     category,
-    client: getValue(row, mapping.client) || "Não informado",
+    client: mapping.client
+      ? getValue(row, mapping.client) || "Não informado"
+      : "Não informado",
     description,
     amount: normalizeAmount(getValue(row, mapping.amount)),
-    status: normalizeStatus(getValue(row, mapping.status)),
+    status: mapping.status
+      ? normalizeStatus(getValue(row, mapping.status))
+      : "pago",
     type: detectTransactionType(category, description),
+    visible_fields: {
+      date: Boolean(mapping.date),
+      category: Boolean(mapping.category),
+      client: Boolean(mapping.client),
+      description: Boolean(mapping.description),
+      status: Boolean(mapping.status),
+    },
   };
 }
 
@@ -259,8 +275,14 @@ export function UploadCsv() {
 
       setSuccessMessage("Dados importados com sucesso!");
       router.push("/dashboard");
-    } catch {
-      setError("Erro inesperado ao importar os dados.");
+    } catch (err) {
+      console.error("Erro ao importar:", err);
+
+      setError(
+        err instanceof Error
+          ? `Erro inesperado ao importar os dados: ${err.message}`
+          : "Erro inesperado ao importar os dados."
+      );
     } finally {
       setIsImporting(false);
     }
@@ -298,6 +320,22 @@ export function UploadCsv() {
       </div>
     );
   }
+
+  const visiblePreviewFields = {
+    date: transactions.some((transaction) => transaction.visible_fields?.date),
+    category: transactions.some(
+      (transaction) => transaction.visible_fields?.category
+    ),
+    client: transactions.some(
+      (transaction) => transaction.visible_fields?.client
+    ),
+    description: transactions.some(
+      (transaction) => transaction.visible_fields?.description
+    ),
+    status: transactions.some(
+      (transaction) => transaction.visible_fields?.status
+    ),
+  };
 
   return (
     <div className="space-y-6">
@@ -433,45 +471,59 @@ export function UploadCsv() {
             <table className="w-full text-left text-sm">
               <thead className="border-b border-slate-200 text-slate-500 dark:border-slate-800 dark:text-slate-400">
                 <tr>
-                  <th className="whitespace-nowrap pb-3 pr-6 font-medium">
-                    Data
-                  </th>
-                  <th className="whitespace-nowrap pb-3 pr-6 font-medium">
-                    Categoria
-                  </th>
-                  <th className="whitespace-nowrap pb-3 pr-6 font-medium">
-                    Cliente
-                  </th>
-                  <th className="whitespace-nowrap pb-3 pr-6 font-medium">
-                    Descrição
-                  </th>
-                  <th className="whitespace-nowrap pb-3 pr-6 font-medium">
-                    Tipo
-                  </th>
-                  <th className="whitespace-nowrap pb-3 pr-6 font-medium">
-                    Status
-                  </th>
-                  <th className="whitespace-nowrap pb-3 font-medium">
-                    Valor
-                  </th>
+                  {visiblePreviewFields.date && (
+                    <th className="whitespace-nowrap pb-3 pr-6 font-medium">Data</th>
+                  )}
+
+                  {visiblePreviewFields.category && (
+                    <th className="whitespace-nowrap pb-3 pr-6 font-medium">Categoria</th>
+                  )}
+
+                  {visiblePreviewFields.client && (
+                    <th className="whitespace-nowrap pb-3 pr-6 font-medium">Cliente</th>
+                  )}
+
+                  {visiblePreviewFields.description && (
+                    <th className="whitespace-nowrap pb-3 pr-6 font-medium">Descrição</th>
+                  )}
+
+                  <th className="whitespace-nowrap pb-3 pr-6 font-medium">Tipo</th>
+
+                  {visiblePreviewFields.status && (
+                    <th className="whitespace-nowrap pb-3 pr-6 font-medium">Status</th>
+                  )}
+
+                  <th className="whitespace-nowrap pb-3 font-medium">Valor</th>
                 </tr>
               </thead>
 
               <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                 {transactions.map((transaction, index) => (
                   <tr key={`${transaction.client}-${transaction.date}-${index}`}>
-                    <td className="whitespace-nowrap py-4 pr-6 text-slate-600 dark:text-slate-300">
-                      {transaction.date}
-                    </td>
-                    <td className="whitespace-nowrap py-4 pr-6 text-slate-600 dark:text-slate-300">
-                      {transaction.category}
-                    </td>
-                    <td className="whitespace-nowrap py-4 pr-6 font-medium text-slate-950 dark:text-white">
-                      {transaction.client}
-                    </td>
-                    <td className="min-w-52 py-4 pr-6 text-slate-500 dark:text-slate-400">
-                      {transaction.description}
-                    </td>
+                    {visiblePreviewFields.date && (
+                      <td className="whitespace-nowrap py-4 pr-6 text-slate-600 dark:text-slate-300">
+                        {transaction.date}
+                      </td>
+                    )}
+
+                    {visiblePreviewFields.category && (
+                      <td className="whitespace-nowrap py-4 pr-6 text-slate-600 dark:text-slate-300">
+                        {transaction.category}
+                      </td>
+                    )}
+
+                    {visiblePreviewFields.client && (
+                      <td className="whitespace-nowrap py-4 pr-6 font-medium text-slate-950 dark:text-white">
+                        {transaction.client}
+                      </td>
+                    )}
+
+                    {visiblePreviewFields.description && (
+                      <td className="min-w-52 py-4 pr-6 text-slate-500 dark:text-slate-400">
+                        {transaction.description}
+                      </td>
+                    )}
+
                     <td className="whitespace-nowrap py-4 pr-6">
                       <span
                         className={`rounded-full px-3 py-1 text-xs font-medium ${
@@ -483,17 +535,21 @@ export function UploadCsv() {
                         {transaction.type}
                       </span>
                     </td>
-                    <td className="whitespace-nowrap py-4 pr-6">
-                      <span
-                        className={`rounded-full px-3 py-1 text-xs font-medium ${
-                          transaction.status === "pago"
-                            ? "bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300"
-                            : "bg-amber-50 text-amber-700 dark:bg-amber-950 dark:text-amber-300"
-                        }`}
-                      >
-                        {transaction.status}
-                      </span>
-                    </td>
+
+                    {visiblePreviewFields.status && (
+                      <td className="whitespace-nowrap py-4 pr-6">
+                        <span
+                          className={`rounded-full px-3 py-1 text-xs font-medium ${
+                            transaction.status === "pago"
+                              ? "bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300"
+                              : "bg-amber-50 text-amber-700 dark:bg-amber-950 dark:text-amber-300"
+                          }`}
+                        >
+                          {transaction.status}
+                        </span>
+                      </td>
+                    )}
+
                     <td className="whitespace-nowrap py-4 text-slate-600 dark:text-slate-300">
                       {new Intl.NumberFormat("pt-BR", {
                         style: "currency",

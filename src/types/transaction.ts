@@ -13,4 +13,11 @@ export type Transaction = {
   status: TransactionStatus;
   type: TransactionType;
   created_at?: string;
+  visible_fields?: {
+  date: boolean;
+  category: boolean;
+  client: boolean;
+  description: boolean;
+  status: boolean;
+};
 };

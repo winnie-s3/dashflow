@@ -5,7 +5,28 @@ type TransactionsTableProps = {
   transactions: Transaction[];
 };
 
+function shouldShowField(
+  transactions: Transaction[],
+  field: "date" | "category" | "client" | "description" | "status"
+) {
+  const hasVisibleFields = transactions.some(
+    (transaction) => transaction.visible_fields
+  );
+
+  if (!hasVisibleFields) {
+    return true;
+  }
+
+  return transactions.some((transaction) => transaction.visible_fields?.[field]);
+}
+
 export function TransactionsTable({ transactions }: TransactionsTableProps) {
+  const showDate = shouldShowField(transactions, "date");
+  const showCategory = shouldShowField(transactions, "category");
+  const showClient = shouldShowField(transactions, "client");
+  const showDescription = shouldShowField(transactions, "description");
+  const showStatus = shouldShowField(transactions, "status");
+
   return (
     <section className="mt-6 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
       <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
@@ -28,27 +49,64 @@ export function TransactionsTable({ transactions }: TransactionsTableProps) {
         <table className="w-full text-left text-sm">
           <thead className="border-b border-slate-200 text-slate-500 dark:border-slate-800 dark:text-slate-400">
             <tr>
-              <th className="whitespace-nowrap pb-3 pr-6 text-left font-medium text-slate-500 dark:text-slate-400">Cliente</th>
-              <th className="whitespace-nowrap pb-3 pr-6 text-left font-medium text-slate-500 dark:text-slate-400">Categoria</th>
-              <th className="whitespace-nowrap pb-3 pr-6 text-left font-medium text-slate-500 dark:text-slate-400">Tipo</th>
-              <th className="whitespace-nowrap pb-3 pr-6 text-left font-medium text-slate-500 dark:text-slate-400">Status</th>
-              <th className="whitespace-nowrap pb-3 pr-6 text-left font-medium text-slate-500 dark:text-slate-400">Valor</th>
-              <th className="whitespace-nowrap pb-3 pr-6 text-left font-medium text-slate-500 dark:text-slate-400">Data</th>
+              {showClient && (
+                <th className="whitespace-nowrap pb-3 pr-6 font-medium">
+                  Cliente
+                </th>
+              )}
+
+              {showCategory && (
+                <th className="whitespace-nowrap pb-3 pr-6 font-medium">
+                  Categoria
+                </th>
+              )}
+
+              {showDescription && (
+                <th className="whitespace-nowrap pb-3 pr-6 font-medium">
+                  Descrição
+                </th>
+              )}
+
+              <th className="whitespace-nowrap pb-3 pr-6 font-medium">Tipo</th>
+
+              {showStatus && (
+                <th className="whitespace-nowrap pb-3 pr-6 font-medium">
+                  Status
+                </th>
+              )}
+
+              <th className="whitespace-nowrap pb-3 pr-6 font-medium">
+                Valor
+              </th>
+
+              {showDate && (
+                <th className="whitespace-nowrap pb-3 font-medium">Data</th>
+              )}
             </tr>
           </thead>
 
           <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
             {transactions.map((transaction, index) => (
               <tr key={`${transaction.client}-${transaction.date}-${index}`}>
-                <td className="whitespace-nowrap py-4 pr-6 font-medium text-slate-950 dark:text-white">
-                  {transaction.client}
-                </td>
+                {showClient && (
+                  <td className="whitespace-nowrap py-4 pr-6 font-medium text-slate-950 dark:text-white">
+                    {transaction.client}
+                  </td>
+                )}
 
-                <td className="whitespace-nowrap py-4 pr-6 text-slate-600 dark:text-slate-300">
-                  {transaction.category}
-                </td>
+                {showCategory && (
+                  <td className="whitespace-nowrap py-4 pr-6 text-slate-600 dark:text-slate-300">
+                    {transaction.category}
+                  </td>
+                )}
 
-                <td className="py-4">
+                {showDescription && (
+                  <td className="min-w-52 py-4 pr-6 text-slate-500 dark:text-slate-400">
+                    {transaction.description}
+                  </td>
+                )}
+
+                <td className="whitespace-nowrap py-4 pr-6">
                   <span
                     className={`rounded-full px-3 py-1 text-xs font-medium ${
                       transaction.type === "receita"
@@ -60,25 +118,29 @@ export function TransactionsTable({ transactions }: TransactionsTableProps) {
                   </span>
                 </td>
 
-                <td className="whitespace-nowrap py-4 pr-6">
-                  <span
-                    className={`rounded-full px-3 py-1 text-xs font-medium ${
-                      transaction.status === "pago"
-                        ? "bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300"
-                        : "bg-amber-50 text-amber-700 dark:bg-amber-950 dark:text-amber-300"
-                    }`}
-                  >
-                    {transaction.status}
-                  </span>
-                </td>
+                {showStatus && (
+                  <td className="whitespace-nowrap py-4 pr-6">
+                    <span
+                      className={`rounded-full px-3 py-1 text-xs font-medium ${
+                        transaction.status === "pago"
+                          ? "bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300"
+                          : "bg-amber-50 text-amber-700 dark:bg-amber-950 dark:text-amber-300"
+                      }`}
+                    >
+                      {transaction.status}
+                    </span>
+                  </td>
+                )}
 
                 <td className="whitespace-nowrap py-4 pr-6 text-slate-600 dark:text-slate-300">
                   {formatCurrency(transaction.amount)}
                 </td>
 
-                <td className="whitespace-nowrap py-4 text-slate-500 dark:text-slate-400">
-                  {transaction.date}
-                </td>
+                {showDate && (
+                  <td className="whitespace-nowrap py-4 text-slate-500 dark:text-slate-400">
+                    {transaction.date}
+                  </td>
+                )}
               </tr>
             ))}
           </tbody>

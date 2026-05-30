@@ -50,8 +50,14 @@ export function DashboardClient() {
       }
 
       setTransactions((data ?? []) as Transaction[]);
-    } catch {
-      setError("Erro inesperado ao carregar os dados.");
+    } catch (err) {
+      console.error("Erro ao carregar dashboard:", err);
+
+      setError(
+        err instanceof Error
+          ? `Erro inesperado ao carregar os dados: ${err.message}`
+          : "Erro inesperado ao carregar os dados."
+      );
     } finally {
       setIsLoading(false);
     }
