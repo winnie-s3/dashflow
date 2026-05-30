@@ -15,10 +15,18 @@ export type Transaction = {
   type: TransactionType;
   created_at?: string;
   visible_fields?: {
-  date: boolean;
-  category: boolean;
-  client: boolean;
-  description: boolean;
-  status: boolean;
+    date: boolean;
+    category: boolean;
+    client: boolean;
+    description: boolean;
+    status: boolean;
+  };
 };
+
+export type ImportRecord = {
+  id: string;
+  file_name: string;
+  total_records: number;
+  total_amount: number;
+  created_at: string;
 };

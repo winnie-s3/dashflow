@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 
 import { supabase } from "@/lib/supabase";
-import { Transaction } from "@/types/transaction";
+import { ImportRecord, Transaction } from "@/types/transaction";
 import {
   calculateDashboardMetrics,
   groupByCategory,
@@ -23,6 +23,7 @@ export function DashboardClient() {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [imports, setImports] = useState<ImportRecord[]>([]);
 
   async function loadTransactions() {
     try {
@@ -38,18 +39,30 @@ export function DashboardClient() {
         return;
       }
 
-      const { data, error } = await supabase
+      const { data: importsData, error: importsError } = await supabase
+        .from("imports")
+        .select("*")
+        .eq("user_id", userId)
+        .order("created_at", { ascending: false });
+
+      if (importsError) {
+        setError(`Erro ao buscar importações: ${importsError.message}`);
+        return;
+      }
+
+      const { data: transactionsData, error: transactionsError } = await supabase
         .from("transactions")
         .select("*")
         .eq("user_id", userId)
         .order("created_at", { ascending: false });
 
-      if (error) {
-        setError(`Erro ao buscar dados: ${error.message}`);
+      if (transactionsError) {
+        setError(`Erro ao buscar dados: ${transactionsError.message}`);
         return;
       }
 
-      setTransactions((data ?? []) as Transaction[]);
+      setImports((importsData ?? []) as ImportRecord[]);
+      setTransactions((transactionsData ?? []) as Transaction[]);
     } catch (err) {
       console.error("Erro ao carregar dashboard:", err);
 
@@ -179,7 +192,7 @@ export function DashboardClient() {
         </div>
       </section>
 
-      <TransactionsTable transactions={transactions} />
+      <TransactionsTable transactions={transactions} imports={imports} />
     </>
   );
 }
